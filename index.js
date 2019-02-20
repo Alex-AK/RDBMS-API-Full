@@ -47,8 +47,49 @@ server.post('/api/cohort/', (req, res) => {
   db('cohort')
     .insert(newCohort)
     .then(id => {
+      id = id[0];
       const addedCohort = { ...newCohort, id };
       res.status(200).json({ addedCohort });
+    })
+    .catch(err => console.log(err));
+});
+
+server.put('/api/cohort/:id', (req, res) => {
+  const id = req.params.id;
+  const updatedCohort = req.body;
+  const { name } = req.body;
+
+  if (!name) {
+    res
+      .status(500)
+      .json({ Message: 'Missing required input, please and try again.' });
+  }
+
+  db('cohort')
+    .where({ id })
+    .update(updatedCohort)
+    .then(id => {
+      db('cohort')
+        .where({ id })
+        .then(cohort => res.status(200).json({ cohort }))
+        .catch(err => console.log(err));
+    })
+    .catch(err => console.log(err));
+});
+
+server.delete('/api/cohort/:id', (req, res) => {
+  const id = req.params.id;
+  db('cohort')
+    .where({ id: id })
+    .delete()
+    .then(count => {
+      if (count === 0) {
+        res.status(404).json({ Error: 'Id not found' });
+      } else {
+        res
+          .status(200)
+          .json({ Message: `Item with id of ${id} was successfully deleted` });
+      }
     })
     .catch(err => console.log(err));
 });
