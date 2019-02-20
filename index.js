@@ -20,7 +20,11 @@ server.get('/api/cohort', (req, res) => {
     .then(cohorts => {
       res.status(200).json(cohorts);
     })
-    .catch(err => console.log(err));
+    .catch(err =>
+      res
+        .status(500)
+        .json({ message: 'Unexpected error, please try again.', err })
+    );
 });
 
 server.get('/api/cohort/:id', (req, res) => {
@@ -30,7 +34,11 @@ server.get('/api/cohort/:id', (req, res) => {
     .then(cohort => {
       res.status(200).json(cohort);
     })
-    .catch(err => console.log(err));
+    .catch(err =>
+      res
+        .status(500)
+        .json({ message: 'Unexpected error, please try again.', err })
+    );
 });
 
 server.post('/api/cohort/', (req, res) => {
@@ -51,7 +59,11 @@ server.post('/api/cohort/', (req, res) => {
       const addedCohort = { ...newCohort, id };
       res.status(200).json({ addedCohort });
     })
-    .catch(err => console.log(err));
+    .catch(err =>
+      res
+        .status(500)
+        .json({ message: 'Unexpected error, please try again.', err })
+    );
 });
 
 server.put('/api/cohort/:id', (req, res) => {
@@ -74,7 +86,11 @@ server.put('/api/cohort/:id', (req, res) => {
         .then(cohort => res.status(200).json({ cohort }))
         .catch(err => console.log(err));
     })
-    .catch(err => console.log(err));
+    .catch(err =>
+      res
+        .status(500)
+        .json({ message: 'Unexpected error, please try again.', err })
+    );
 });
 
 server.delete('/api/cohort/:id', (req, res) => {
@@ -91,7 +107,11 @@ server.delete('/api/cohort/:id', (req, res) => {
           .json({ Message: `Item with id of ${id} was successfully deleted` });
       }
     })
-    .catch(err => console.log(err));
+    .catch(err =>
+      res
+        .status(500)
+        .json({ message: 'Unexpected error, please try again.', err })
+    );
 });
 
 const port = 4000;
