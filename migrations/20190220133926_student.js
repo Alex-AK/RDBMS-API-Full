@@ -5,7 +5,7 @@ exports.up = function(knex, Promise) {
       .string('name', 128)
       .unique()
       .notNullable();
-    table.timestamp(true, true);
+    table.timestamps(true, true);
   });
 };
 

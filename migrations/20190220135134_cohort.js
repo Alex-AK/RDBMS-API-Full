@@ -3,7 +3,7 @@ exports.up = function(knex, Promise) {
     table.increments();
 
     table.string('name', 128).notNullable();
-    table.timestamp(true, true);
+    table.timestamps(true, true);
     table
       .integer('cohort_id')
       .unsigned()

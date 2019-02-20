@@ -5,16 +5,53 @@ const helmet = require('helmet');
 const knexConfig = {
   client: 'sqlite3',
   connection: {
-    filename: './data/lambda.sqlite3'
+    filename: './data/dev.sqlite3'
   },
   useNullAsDefault: true
 };
-
 const db = knex(knexConfig);
 
 const server = express();
 server.use(helmet());
 server.use(express.json());
+
+server.get('/api/cohort', (req, res) => {
+  db('cohort')
+    .then(cohorts => {
+      res.status(200).json(cohorts);
+    })
+    .catch(err => console.log(err));
+});
+
+server.get('/api/cohort/:id', (req, res) => {
+  const id = req.params.id;
+  db('cohort')
+    .where({ id })
+    .then(cohort => {
+      res.status(200).json(cohort);
+    })
+    .catch(err => console.log(err));
+});
+
+server.post('/api/cohort/', (req, res) => {
+  // post needs name
+  const newCohort = req.body;
+  const { name } = req.body;
+
+  if (!name) {
+    res
+      .status(500)
+      .json({ Message: 'Missing required input, please and try again.' });
+  }
+
+  db('cohort')
+    .insert(newCohort)
+    .then(id => {
+      const addedCohort = { ...newCohort, id };
+      res.status(200).json({ addedCohort });
+    })
+    .catch(err => console.log(err));
+});
 
 const port = 4000;
 server.listen(port, () => {
