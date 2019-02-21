@@ -41,6 +41,28 @@ server.get('/api/cohort/:id', (req, res) => {
     );
 });
 
+server.get('/api/cohort/:id/students', (req, res) => {
+  const id = req.params.id;
+  db('cohort')
+    .select(
+      'cohort.id',
+      'cohort.cohortName',
+      'student.name',
+      'student.cohort_id'
+    )
+    .join('student')
+    .where('student.cohort_id', '=', id)
+    // compare cohort id vs id passed in
+    .then(students => {
+      res.status(200).json(students);
+    })
+    .catch(err =>
+      res
+        .status(500)
+        .json({ message: 'Unexpected error, please try again.', err })
+    );
+});
+
 server.post('/api/cohort/', (req, res) => {
   // post needs name
   const newCohort = req.body;
