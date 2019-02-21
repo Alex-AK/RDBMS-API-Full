@@ -1,22 +1,14 @@
 const express = require('express');
-const knex = require('knex');
 const helmet = require('helmet');
 
-const knexConfig = {
-  client: 'sqlite3',
-  connection: {
-    filename: './data/dev.sqlite3'
-  },
-  useNullAsDefault: true
-};
-const db = knex(knexConfig);
+const db = require('./cohort/cohort-model');
 
 const server = express();
 server.use(helmet());
 server.use(express.json());
 
 server.get('/api/cohort', (req, res) => {
-  db('cohort')
+  db.get()
     .then(cohorts => {
       res.status(200).json(cohorts);
     })
@@ -29,8 +21,7 @@ server.get('/api/cohort', (req, res) => {
 
 server.get('/api/cohort/:id', (req, res) => {
   const id = req.params.id;
-  db('cohort')
-    .where({ id })
+  db.getById(id)
     .then(cohort => {
       res.status(200).json(cohort);
     })
@@ -55,16 +46,7 @@ server.get('/api/students', (req, res) => {
 
 server.get('/api/cohort/:id/students', (req, res) => {
   const id = req.params.id;
-  db('cohort')
-    .select(
-      'cohort.id',
-      'cohort.cohortName',
-      'student.name',
-      'student.cohort_id'
-    )
-    .join('student')
-    .where('student.cohort_id', '=', id)
-    .groupBy('student.name')
+  db.getCohortStudents(id)
     .then(students => {
       res.status(200).json(students);
     })
@@ -78,20 +60,17 @@ server.get('/api/cohort/:id/students', (req, res) => {
 server.post('/api/cohort/', (req, res) => {
   // post needs name
   const newCohort = req.body;
-  const { name } = req.body;
+  const { cohortName } = req.body;
 
-  if (!name) {
+  if (!cohortName) {
     res
       .status(500)
       .json({ Message: 'Missing required input, please and try again.' });
   }
 
-  db('cohort')
-    .insert(newCohort)
-    .then(id => {
-      id = id[0];
-      const addedCohort = { ...newCohort, id };
-      res.status(200).json({ addedCohort });
+  db.add(newCohort)
+    .then(cohort => {
+      res.status(200).json({ cohort });
     })
     .catch(err =>
       res
@@ -102,21 +81,18 @@ server.post('/api/cohort/', (req, res) => {
 
 server.put('/api/cohort/:id', (req, res) => {
   const id = req.params.id;
-  const updatedCohort = req.body;
-  const { name } = req.body;
+  const changes = req.body;
+  const { cohortName } = req.body;
 
-  if (!name) {
+  if (!cohortName) {
     res
       .status(500)
       .json({ Message: 'Missing required input, please and try again.' });
   }
 
-  db('cohort')
-    .where({ id })
-    .update(updatedCohort)
-    .then(id => {
-      db('cohort')
-        .where({ id })
+  db.update(id, changes)
+    .then(() => {
+      db.getById(id)
         .then(cohort => res.status(200).json({ cohort }))
         .catch(err => console.log(err));
     })
@@ -129,9 +105,7 @@ server.put('/api/cohort/:id', (req, res) => {
 
 server.delete('/api/cohort/:id', (req, res) => {
   const id = req.params.id;
-  db('cohort')
-    .where({ id: id })
-    .delete()
+  db.remove(id)
     .then(count => {
       if (count === 0) {
         res.status(404).json({ Error: 'Id not found' });
