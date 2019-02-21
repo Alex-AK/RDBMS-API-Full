@@ -41,6 +41,18 @@ server.get('/api/cohort/:id', (req, res) => {
     );
 });
 
+server.get('/api/students', (req, res) => {
+  db('student')
+    .then(students => {
+      res.status(200).json(students);
+    })
+    .catch(err =>
+      res
+        .status(500)
+        .json({ message: 'Unexpected error, please try again.', err })
+    );
+});
+
 server.get('/api/cohort/:id/students', (req, res) => {
   const id = req.params.id;
   db('cohort')
@@ -52,7 +64,7 @@ server.get('/api/cohort/:id/students', (req, res) => {
     )
     .join('student')
     .where('student.cohort_id', '=', id)
-    // compare cohort id vs id passed in
+    .groupBy('student.name')
     .then(students => {
       res.status(200).json(students);
     })
